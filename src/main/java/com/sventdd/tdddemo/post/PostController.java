@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -27,7 +26,7 @@ class PostController {
     
     @GetMapping("/{id}")
     Optional<Post> findPostById(@PathVariable Integer id) {
-        return postRepository.findById(id);
+        return Optional.ofNullable(postRepository.findById(id).orElseThrow(PostNotFoundException::new));
     }
     
 

@@ -70,7 +70,10 @@ public class PostControllerTest {
 
     // /api/posts/1
     @Test
-    void shouldFindFirstPost() throws Exception {
+    void shouldFindWithGivenID() throws Exception {
+        // This does not work in my vscode setting though I am using java 21
+        // var post = posts.get(0);
+        // I cannot do "id":\{post.id()} in the String format
         String jsonResponse = """
 
                 {
@@ -91,4 +94,29 @@ public class PostControllerTest {
     }
 
     // /api/posts/999
+    @Test
+    void shouldReturnNotFoundForId999() throws Exception {
+        when(postRepository.findById(999)).thenThrow(PostNotFoundException.class);
+        mockMvc.perform(get("/api/posts/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldCreateANewPostWhenPostIsValid() throws Exception {
+        String newJsonPost = """
+                {
+                    "id":3,
+                    "userId":1,
+                    "title":"Hello new Post!",
+                    "body":"This is my new post",
+                    "version":null
+                }
+                """;
+
+        mockMvc.perform(post("/api/posts")
+                .contentType("application/json")
+                .content(newJsonPost))
+                .andExpect(status().isCreated());
+
+    }
 }
