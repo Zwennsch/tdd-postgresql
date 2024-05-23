@@ -103,6 +103,7 @@ public class PostControllerTest {
 
     @Test
     void shouldCreateANewPostWhenPostIsValid() throws Exception {
+        
         String newJsonPost = """
                 {
                     "id":3,
@@ -112,11 +113,33 @@ public class PostControllerTest {
                     "version":null
                 }
                 """;
+        // I am not sure why I would need this, as the test runs without this line.
+        when(postRepository.save(posts.get(0))).thenReturn(posts.get(0));
 
         mockMvc.perform(post("/api/posts")
                 .contentType("application/json")
                 .content(newJsonPost))
                 .andExpect(status().isCreated());
+
+    }
+
+    @Test
+    void shouldNotCreateANewPostWhenPostIsInvalid() throws Exception {
+        
+        String newJsonPost = """
+                {
+                    "id":3,
+                    "userId":1,
+                    "title":"",
+                    "body":"",
+                    "version":null
+                }
+                """;
+
+        mockMvc.perform(post("/api/posts")
+                .contentType("application/json")
+                .content(newJsonPost))
+                .andExpect(status().isBadRequest());
 
     }
 }
