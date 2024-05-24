@@ -12,6 +12,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -103,7 +106,7 @@ public class PostControllerTest {
 
     @Test
     void shouldCreateANewPostWhenPostIsValid() throws Exception {
-        
+
         String newJsonPost = """
                 {
                     "id":3,
@@ -125,7 +128,7 @@ public class PostControllerTest {
 
     @Test
     void shouldNotCreateANewPostWhenPostIsInvalid() throws Exception {
-        
+
         String newJsonPost = """
                 {
                     "id":3,
@@ -141,5 +144,39 @@ public class PostControllerTest {
                 .content(newJsonPost))
                 .andExpect(status().isBadRequest());
 
+    }
+
+    // Update and delete
+    @Test
+    void shouldUpdatePostWhenGivenValidPost() throws Exception {
+        Post updated = new Post(1, 1, "Updated title", "My Updated Post1", 1);
+        String updatedJson = """
+                {
+                    "id":1,
+                    "userId":1,
+                    "title":"Updated title",
+                    "body":"My updated Post1",
+                    "version":1
+                }
+                """;
+        when(postRepository.save(updated)).thenReturn(updated);
+        // This mocking is important otherwise a 404 is returned 
+        when(postRepository.findById(1)).thenReturn(Optional.of(updated));
+
+        mockMvc.perform(put("/api/posts/1")
+                .contentType("application/json")
+                .content(updatedJson))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldDeletePostWhenGivenValidId() throws Exception{
+        doNothing().when(postRepository).deleteById(1);
+
+        mockMvc.perform(delete("/api/posts/1")
+        ).andExpect(status().isNoContent());
+
+        // make sure that the method gets called
+        verify(postRepository, times(1)).deleteById(1);
     }
 }
